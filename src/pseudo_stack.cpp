@@ -20,6 +20,16 @@ namespace ZiLin {
         } PStack;
         
         static unsigned int PStack_Page_Offset = (unsigned int)(&(((PStack_Page *)(0))->list_head));
+        
+        static unsigned int PStack_Offset = (unsigned int)(&(((PStack *)(0))->list_head));
+        
+        static inline PStack *PStack_Fetch(List_Head *list_head) {
+        	return (PStack *)((char *)list_head - PStack_Offset);
+        }
+        
+        static inline PStack_Page *PStack_Page_Fetch(List_Head *list_head) {
+        	return (PStack_Page *)((char *)list_head - PStack_Page_Offset);
+        }
 	
 	void PStack_List_Initial(void) {
 		List_Initial(&PStack_List);
@@ -49,13 +59,34 @@ namespace ZiLin {
 		else {
 			PStack *pstack = PStack_Fetch(&(PStack_List.next));
 			while (&(pstack->list_head) != &PStack_List && pstack->id != id) {
-				pstack = PStack_Fetch(&(pstack->next));
+				pstack = PStack_Fetch(&(pstack->list_head.next));
 			}
 			if (&(pstack->list_head) == &PStack_List) {
 				return 0;
 			}
 			else {
 				return pstack;
+			}
+		}
+	}
+	
+	char *PStack_List_Allocate(unsigned int id, unsigned int obj_size) {
+		PStack *pstack = PStack_List_Search(id);
+		if (0 == pstack) {
+			return 0;
+		}
+		else if (PStack_Page_Size < obj_size) {
+			return 0;
+		}
+		else {
+			PStack_Page *last_page = PStack_Page_Fetch(pstack->page_list.prev);
+			if (last_page->hwm + obj_size < last_page->size) {
+				PStack_Page_Allocate(last_page, obj_size);
+			}
+			else {
+				PStack_Add_Page(pstack);
+				last_page = PStack_Page_Fetch(pstack->page_list.prev);
+				PStack_Page_Allocate(last_page, obj_size);
 			}
 		}
 	}
@@ -70,7 +101,7 @@ namespace ZiLin {
 	
 	void PStack_Free_Page(PStack *stack) {
 		while (!List_Is_Empty(stack->page_list)) {
-			PStack_Page *last_page = (PStack_Page *)((char *)(stack->page_list->prev) - PStack_Page_Offset);
+			PStack_Page *last_page = PStack_Page_Fetch(stack->page_list.prev);
 			last_page->hwm = 0;
 			delete [] last_page->page;
 			List_Delete(&(stack->page_list), &(last_page->list_head));
