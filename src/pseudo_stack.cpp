@@ -21,9 +21,48 @@ namespace ZiLin {
         
         static unsigned int PStack_Page_Offset = (unsigned int)(&(((PStack_Page *)(0))->list_head));
 	
+	void PStack_List_Initial(void) {
+		List_Initial(&PStack_List);
+	}
+	
+	unsigned int PStack_List_Add_PStack() {
+		static unsigned int id = 0;
+		PStack *pstack = new PStack;
+		id = id + 1;
+		List_Insert(&PStack_List, &(pstack->list_head));
+		List_Initial(&(pstack->page_list));
+		pstack->id = id;
+		return id;
+	}
+	
+	void PStack_List_Delete_PStack(unsigned int id) {
+		PStack *pstack = PStack_List_Search(id);
+		PStack_Free_Page(pstack);
+		List_Delete(&PStack_List, &(pstack->list_head));
+		delete pstack;
+	}
+	
+	PStack *PStack_List_Search(unsigned int id) {
+		if (List_Is_Empty(&PStack_List)) {
+			return 0;
+		}
+		else {
+			PStack *pstack = PStack_Fetch(&(PStack_List.next));
+			while (&(pstack->list_head) != &PStack_List && pstack->id != id) {
+				pstack = PStack_Fetch(&(pstack->next));
+			}
+			if (&(pstack->list_head) == &PStack_List) {
+				return 0;
+			}
+			else {
+				return pstack;
+			}
+		}
+	}
+	
 	void PStack_Add_Page(PStack *stack) {
 		PStack_Page *page = new PStack_Page;
-		List_Insert(stack->page_list, page->list_head);
+		List_Insert(&(stack->page_list), &(page->list_head));
 		page->size = PStack_Page_Size;
 		page->hwm = 0;
 		page->page = new char[PStack_Page_Size];
@@ -34,7 +73,7 @@ namespace ZiLin {
 			PStack_Page *last_page = (PStack_Page *)((char *)(stack->page_list->prev) - PStack_Page_Offset);
 			last_page->hwm = 0;
 			delete [] last_page->page;
-			List_Delete(stack->page_list, &(last_page->list_head));
+			List_Delete(&(stack->page_list), &(last_page->list_head));
 			delete last_page;
 		}
 	}
