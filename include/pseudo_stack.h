@@ -14,6 +14,7 @@ namespace ZiLin {
 	void PStack_List_Delete_PStack(PStack_Id id);
 
 	char *PStack_List_Allocate(unsigned int obj_size, PStack_Id id);
+
 }
 
 #endif
