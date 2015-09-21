@@ -5,7 +5,7 @@
 
 namespace ZiLin {
 
-        template<typename List_Body>
+	template<typename List_Body>
 	class List_Node {
 	public:
 		typedef List_Body Body_Type;
@@ -24,12 +24,12 @@ namespace ZiLin {
 		}
 
 		Body_Type *Fetch(List_Head *list_head) {
-			return (Body_Type *)((char *)(list_head) + offset);
+			return (Body_Type *)((char *)(list_head)+offset);
 		}
 	private:
 		unsigned int offset;
 	};
-	
+
 }
 
 #endif

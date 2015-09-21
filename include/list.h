@@ -15,7 +15,7 @@ namespace ZiLin {
 		list->next = list;
 	}
 
-	bool List_Is_Empty(List *list) {
+	inline bool List_Is_Empty(List *list) {
 		if (list == list->prev && list == list->next)
 		{
 			return true;
@@ -26,7 +26,7 @@ namespace ZiLin {
 		}
 	}
 
-	void List_Insert(List *list, List_Head *node) {
+	inline void List_Insert(List *list, List_Head *node) {
 		List *last = list->prev;
 
 		last->next = node;
@@ -35,7 +35,7 @@ namespace ZiLin {
 		list->prev = node;
 	}
 
-	void List_Delete(List *list, List_Head *node) {
+	inline void List_Delete(List *list, List_Head *node) {
 		node->prev->next = node->next;
 		node->next->prev = node->prev;
 		node->prev = 0;
